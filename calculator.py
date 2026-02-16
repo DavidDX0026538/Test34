@@ -77,6 +77,21 @@ class Calculator:
             colspan = btn_data[4] if len(btn_data) > 4 else 1
             self.create_button(text, row, col, color, colspan)
 
+        # History button
+        history_btn = tk.Button(
+            self.display_frame,
+            text="📋 History",
+            bg=Theme.BTN_OPERATOR,
+            fg="#11111b",
+            font=("Inter", 10, "bold"),
+            borderwidth=0,
+            activebackground=Theme.ACTIVE_BG,
+            activeforeground=Theme.ACTIVE_FG,
+            cursor="hand2",
+            command=self.show_history
+        )
+        history_btn.pack(side="left", padx=5, pady=5)
+
         # Bind keyboard
         self.root.bind('<Key>', self.key_event)
 
@@ -102,6 +117,71 @@ class Calculator:
         # Configure weights for responsive grid
         self.buttons_frame.grid_columnconfigure(col, weight=1)
         self.buttons_frame.grid_rowconfigure(row, weight=1)
+
+    def show_history(self):
+        """Display calculation history in a new window."""
+        if not self.history:
+            messagebox.showinfo("History", "No calculations yet!")
+            return
+        
+        history_window = tk.Toplevel(self.root)
+        history_window.title("Calculation History")
+        history_window.geometry("300x400")
+        history_window.configure(bg=Theme.BG)
+        
+        # Title label
+        title = tk.Label(
+            history_window,
+            text="Recent Calculations",
+            bg=Theme.BG,
+            fg=Theme.TEXT_PRIMARY,
+            font=("Inter", 14, "bold"),
+            pady=10
+        )
+        title.pack()
+        
+        # Listbox with scrollbar
+        frame = tk.Frame(history_window, bg=Theme.BG)
+        frame.pack(fill="both", expand=True, padx=10, pady=10)
+        
+        scrollbar = tk.Scrollbar(frame, bg=Theme.BTN_NUMBER)
+        scrollbar.pack(side="right", fill="y")
+        
+        listbox = tk.Listbox(
+            frame,
+            bg=Theme.BTN_NUMBER,
+            fg=Theme.TEXT_PRIMARY,
+            font=("Inter", 11),
+            yscrollcommand=scrollbar.set,
+            borderwidth=0
+        )
+        listbox.pack(side="left", fill="both", expand=True)
+        scrollbar.config(command=listbox.yview)
+        
+        # Insert history items (reversed to show newest first)
+        for calc in reversed(self.history):
+            listbox.insert(0, f"• {calc}")
+        
+        # Clear history button
+        clear_btn = tk.Button(
+            history_window,
+            text="Clear History",
+            bg=Theme.BTN_DELETE,
+            fg="#11111b",
+            font=("Inter", 10, "bold"),
+            borderwidth=0,
+            activebackground=Theme.ACTIVE_BG,
+            activeforeground=Theme.ACTIVE_FG,
+            cursor="hand2",
+            command=lambda: self.clear_history(history_window)
+        )
+        clear_btn.pack(pady=10, padx=10, fill="x")
+    
+    def clear_history(self, window):
+        """Clear the calculation history."""
+        self.history = []
+        window.destroy()
+        messagebox.showinfo("History", "History cleared!")
 
     def on_button_click(self, char):
         if char == 'C':
